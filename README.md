@@ -1,0 +1,1 @@
+Graylog FatJar Example
