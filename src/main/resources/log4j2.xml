@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Configuration status="TRACE" monitorInterval="180">
+	<Properties>
+		<Property name="app-name">graylog-example-fatjar</Property>
+
+		<!-- CHANGE log-path ACCORDING TO YOUR NEEDS -->
+		<Property name="log-path">$${sys:application-directory}/${app-name}/log
+		</Property>
+		<Property name="log-pattern">[%sn] %d{yyyy/MM/dd HH:mm:ss,SSS} [%-6p] [%t]
+			%c{3}:%L - %m%n</Property>
+	</Properties>
+
+	<!-- CHANGE HOST AND PORT PROPERTIES ACCORDING TO YOUR NEEDS -->
+	<Appenders>
+		<Gelf name="gelf" host="udp:graylog.somedomain.com" port="12212"
+			version="1.1" extractStackTrace="true" filterStackTrace="true"
+			mdcProfiling="true" includeFullMdc="true" maximumMessageSize="8192"
+			originHost="%host{fqdn}">
+
+			<!-- THESE FIELD DEFINITIONS ARE NOT MANDATORY, YOU CAN USE DEFAULTS -->
+			<Field name="timestamp" pattern="%d{dd MMM yyyy HH:mm:ss,SSS}" />
+			<Field name="level" pattern="%level" />
+			<Field name="simpleClassName" pattern="%C{1}" />
+			<Field name="className" pattern="%C" />
+			<Field name="server" pattern="%host" />
+			<Field name="server.fqdn" pattern="%host{fqdn}" />
+
+			<!-- THESE ARE MY CUSTOM GRAYLOG FIELDS -->
+			<Field name="logStream" literal="MYAWESOMEAPPS" />
+			<Field name="projectName" literal="MYAWESOMEPROJECT" />
+		</Gelf>
+		<RollingFile name="RollingFile"
+			fileName="${log-path}/server/${app-name}-server"
+			filePattern="${log-path}/server/${app-name}-server-%d{yyyy-MM-dd}-%i.log.gz"
+			append="false">
+			<PatternLayout>
+				<pattern>${log-pattern}</pattern>
+			</PatternLayout>
+			<Policies>
+				<SizeBasedTriggeringPolicy size="100 MB" />
+			</Policies>
+		</RollingFile>
+		<!-- <Console name="STDOUT" target="SYSTEM_OUT" ignoreExceptions="false"> -->
+		<!-- <PatternLayout> -->
+		<!-- <pattern>${log-pattern}</pattern> -->
+		<!-- </PatternLayout> -->
+		<!-- </Console> -->
+	</Appenders>
+
+	<Loggers>
+		<!-- <AsyncLogger name="root" level="TRACE" additivity="false" includeLocation="true"> -->
+		<!-- <appender-ref ref="RollingFile" level="TRACE" /> -->
+		<!-- <appender-ref ref="RollingFileAudit" level="TRACE" /> -->
+		<!-- AppenderRef ref="STDOUT"/> -->
+		<!-- </AsyncLogger> -->
+
+		<Root level="INFO" additivity="false" includeLocation="true">
+			<!-- <AppenderRef ref="RollingFile" /> -->
+			<!-- <AppenderRef ref="STDOUT"/> -->
+			<AppenderRef ref="RollingFile" />
+			<AppenderRef ref="gelf" />
+		</Root>
+
+		<!-- YOU CAN ADD THE LOGGERS BELOW IF YOU USE SPRING & SPRING JDBC -->
+
+		<!-- <Logger -->
+		<!-- name="org.springframework.web.filter.CommonsRequestLoggingFilter" -->
+		<!-- level="DEBUG" additivity="false"> -->
+		<!-- <AppenderRef ref="STDOUT" /> -->
+		<!-- <AppenderRef ref="RollingFile" /> -->
+		<!-- <AppenderRef ref="gelf" /> -->
+		<!-- </Logger> -->
+
+		<!-- <Logger name="org.springframework.jdbc.core.JdbcTemplate" -->
+		<!-- level="DEBUG" additivity="false"> -->
+		<!-- <AppenderRef ref="STDOUT" /> -->
+		<!-- <AppenderRef ref="RollingFile" /> -->
+		<!-- <AppenderRef ref="gelf" /> -->
+		<!-- </Logger> -->
+
+		<!-- <Logger -->
+		<!-- name="org.springframework.jdbc.core.StatementCreatorUtils" -->
+		<!-- level="TRACE" additivity="false"> -->
+		<!-- <AppenderRef ref="STDOUT" /> -->
+		<!-- <AppenderRef ref="RollingFile" /> -->
+		<!-- <AppenderRef ref="gelf" /> -->
+		<!-- </Logger> -->
+	</Loggers>
+</Configuration>
